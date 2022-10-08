@@ -10,7 +10,7 @@ conn = sqlite3.connect("data.db", check_same_thread=False)
 conn.execute(
     """
     CREATE TABLE IF NOT EXISTS notes (
-    "id" serial primary key,
+    "id" INTEGER primary key AUTOINCREMENT,
     "value" TEXT not null default 'empty',
     "checked" BOOLEAN not null default False)
     """
