@@ -1,9 +1,22 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import psycopg2
+
+# import psycopg2
+import sqlite3
 
 
-conn = psycopg2.connect(host="localhost", user="arijitroy")
+conn = sqlite3.connect("data.db", check_same_thread=False)
+
+conn.execute(
+    """
+    CREATE TABLE IF NOT EXISTS notes (
+    "id" serial primary key,
+    "value" TEXT not null default 'empty',
+    "checked" BOOLEAN not null default False)
+    """
+)
+
+conn.commit()
 
 app = FastAPI()
 
@@ -20,7 +33,7 @@ class CreateNote(BaseModel):
 @app.put("/create")
 def _create_note(request_body: CreateNote):
     cur = conn.cursor()
-    cur.execute("INSERT INTO notes (value) VALUES (%s)", (request_body.value,))
+    cur.execute("INSERT INTO notes (value) VALUES (?)", (request_body.value,))
     conn.commit()
 
     cur.close()
@@ -37,7 +50,7 @@ class UpdateNote(BaseModel):
 def _create_note(request_body: UpdateNote):
     cur = conn.cursor()
     cur.execute(
-        "UPDATE notes SET value = %s WHERE id = %s",
+        "UPDATE notes SET value = ? WHERE id = ?",
         (request_body.value, request_body.id),
     )
     conn.commit()
@@ -55,7 +68,7 @@ class CheckNote(BaseModel):
 def _create_note(request_body: CheckNote):
     cur = conn.cursor()
     cur.execute(
-        "UPDATE notes SET checked = NOT checked WHERE id = %s",
+        "UPDATE notes SET checked = NOT checked WHERE id = ?",
         (request_body.id,),
     )
     conn.commit()
@@ -87,7 +100,7 @@ class DeleteNote(BaseModel):
 @app.delete("/delete")
 def _fetch_all(request_body: DeleteNote):
     cur = conn.cursor()
-    cur.execute("DELETE FROM notes where id = %s", (request_body.id,))
+    cur.execute("DELETE FROM notes where id = ?", (request_body.id,))
 
     conn.commit()
 
