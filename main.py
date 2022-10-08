@@ -78,3 +78,17 @@ def _fetch_all():
         results.append(temp_dict)
 
     return results
+
+
+class DeleteNote(BaseModel):
+    id: int
+
+
+@app.delete("/delete")
+def _fetch_all(request_body: DeleteNote):
+    cur = conn.cursor()
+    cur.execute("DELETE FROM notes where id = %s", (request_body.id,))
+
+    conn.commit()
+
+    return {"status": "deleted"}
